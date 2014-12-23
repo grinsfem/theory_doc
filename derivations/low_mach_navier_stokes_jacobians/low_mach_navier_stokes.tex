@@ -1,0 +1,146 @@
+\documentclass[10pt]{article}
+ 
+\title{Derivation of Low Mach Navier-Stokes Jacobians}
+\date{}
+
+\usepackage{helvet}
+\renewcommand*\familydefault{\sfdefault}
+\usepackage[left=1in,right=1in,top=1.0in,bottom=1in]{geometry}
+\usepackage[small,compact]{titlesec}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\begin{document}
+
+\begin{center}
+\textbf{Derivation of Low Mach Navier-Stokes Jacobians}
+\end{center}
+
+\section{Background Information}
+The derivation detailed herein is for computing analytical Jacobians for the Low Mach Navier-Stokes equations. The final results are then implemented in GRINS src/physics/src/low\_mach\_navier\_stokes.C, with the goal being that there
+will be a significant speedup in computation over using the standard finite difference approximation for computing the Jaconians. The derivation is broken up into 3 sections: mass (P residual), momentum (U residual), and energy (T residual).
+Each of these is computed in a separate function wihtin the LMNS.C file.  The 3 residuals were already implemented, so they will be the starting point for this derivation. Note that a sign convention has been specified for 
+purposes of optimization.\\
+Also note that, in this case, the following parameters are considered functions of temperature, T:
+\begin{itemize}
+    \item density, $\rho$
+    \item specific heat, $c_p$
+    \item viscosity, $\mu$
+    \item thermal conductivity, $k$
+\end{itemize}
+For the test functions, \textbf{u}=\{$P,U,T$\} and \textbf{$\Phi$}=\{$\xi,\phi,\psi$\}.\\
+Lastly, the variable names used in the code follow this template: $Kxy$, where $x$ is the residual and $y$ is the derivation variable.  For example, $KPT$ is the derivative of the P residual with respect to temperature,
+while $KuP$ is the derivative of the $u$-velocity component of the U residual with respect to pressue. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Mass Equation}
+The given P residual:
+\begin{equation}
+    F_p = (-(U \cdot \nabla T) T^{-1} + \nabla \cdot U)\xi
+\end{equation}
+
+Now converting to tensor notation
+
+\begin{equation}
+    F_p = -u_a T_{a,b} T^{-1} \xi + u_{a,b}\xi
+\end{equation}
+
+Galerkin approximation:
+\begin{align*}
+    u_a &= \sum u_i \phi_i^a\\
+    T &= \sum T_i \psi_i
+\end{align*}
+
+\begin{equation}
+    F_p = -u_i \phi_i^a T_j \psi_j^{a,b} (T_k \psi_k)^{-1} \xi + u_i \phi_i^{a,b} \xi
+\end{equation}
+
+The P residual is a function of velocity, $U$, and Temperature, $T$, so we must take derivative with respect to both of them using the following form
+
+\begin{align*}
+    \frac{\partial}{\partial u_m} (u_i \phi_i^a) &= \phi_m^a \\
+    \frac{\partial}{\partial T_m} (T_i \psi_i) &= \psi_m
+\end{align*}
+
+\begin{align}
+    \frac{\partial F_p}{\partial u_m} = &-\phi_m^{a} T_j \psi_j^{a,b} (T_k \psi_k)^{-1} \xi + \phi_m^{a,b} \xi \nonumber \\
+    \frac{\partial F_p}{\partial u_m} = &-\phi_m^{a} T_{a,b} T^{-1} \xi + \phi_m^{a,b} \xi \label {fp_du}\\ 
+    \nonumber \\
+    \frac{\partial F_p}{\partial T_m} = &-u_i \phi_i^a \xi \left [ T_j \psi_j^{a,b} (-1) (T_k \psi_k)^{-2} (\psi_m) + (T_k \psi_k)^{-1} \psi_m^{a,b} \right ] \nonumber \\
+    \frac{\partial F_p}{\partial T_m} = &-u_a \xi \left [ -T_{a,b} T^{-2} \psi_m + T^{-1} \psi_m^{a,b} \right ] \label{fp_dT}
+\end{align}
+
+Equations \ref{fp_du} and \ref{fp_dT} above are the generalized Jacobian terms for the P residual. When implemented in LMNS.C, the following terms will result:\\
+$KPu, KPv, KPw, KPT$
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Momentum Equation}
+The U residual is given as follows:
+\begin{equation}
+    F_U = -\rho u_a u_{a,b} \phi^b + P \phi^{a,a} - \mu \left [u_{a,b} \phi_{a,b} + u_{b,a} \phi_{a,b} - \frac{2}{3} u_{a,a} \phi_{b,b} \right ] + \rho g_a \phi_a
+\end{equation}
+
+Galerkin approximation
+
+\begin{align*}
+    u_a &= \sum u_i \phi_i^a\\
+    P &= \sum P_i \xi_i\\
+    T &= \sum T_i \psi_i
+\end{align*}
+
+\begin{align}
+    F_U =  -\rho u_i \phi_i^a u_j \phi_j^{a,b} \phi^b + P_i \xi_i \phi^{a,a} - \mu \left [u_i \phi_i^{a,b} \phi_{a,b} + u_i \phi_i^{b,a} \phi_{a,b} - \frac{2}{3} u_i \phi_i^{a,a} \phi_{b,b} \right ] + \rho g_a \phi_a \label{u_resid}
+\end{align}
+
+Equation \ref{u_resid} above is a function of velocity, pressure, and temperature (due to $\rho = \rho(T)$ \\and $\mu = \mu(T)$ \ ), so derivatives must be taken with respect to all of them.
+
+\begin{align}
+   \frac{\partial F_U}{\partial u_m} = &-\rho \left [ u_i \phi_i^a \phi_m^{a,b} + u_j \phi_j^{a,b} \phi_m^a \right ] \phi^b 
+        - \mu \left [\phi_m^{a,b} \phi^{a,b} + \phi_m^{b,a} \phi^{a,b} - \frac{2}{3} \phi_m^{a,a} \phi^{b,b} \right ] \nonumber \\     
+   \frac{\partial F_U}{\partial u_m} = &-\rho \left [ u_a \phi_m^{a,b} + u_{a,b} \phi_m^a \right ] \phi^b - \mu \left [\phi_m^{a,b} \phi^{a,b} + \phi_m^{b,a} \phi^{a,b} - \frac{2}{3} \phi_m^{a,a} \phi^{b,b} \right ] \label{du_du}\\
+   \nonumber \\ 
+   \frac{\partial F_U}{\partial P_m} = &\xi_m \phi^{a,a} \label{du_dp} \\
+   \nonumber \\
+   \frac{\partial F_U}{\partial T_m} = &-\frac{d\rho}{dT} \frac{d}{dT_m}(T_i \psi_i) u_i \phi_i^a u_j \phi_j^{a,b} \phi^b
+        - \left[ 0 + \frac{d\mu}{dT} \frac{d}{dT_m}(T_i \psi_i) [u_i \phi_i^{a,b} \phi_{a,b} + u_i \phi_i^{b,a} \phi_{a,b} - \frac{2}{3} u_i \phi_i^{a,a} \phi_{b,b} ] \right ] \nonumber
+        \\ &+ \frac{d\rho}{dT} \frac{d}{dT_m}(T_i \psi_i) g_a \phi_a \nonumber \\       
+   \frac{\partial F_U}{\partial T_m} = &-\frac{d\rho}{dT} \psi_m u_a u_{a,b} \phi^b
+        - \frac{d\mu}{dT} \psi_m \left [u_{a,b} \phi_{a,b} + u_{b,a} \phi_{a,b} - \frac{2}{3} u_{a,a} \phi_{b,b} \right ]
+        + \frac{d\rho}{dT} \psi_m g_a \phi_a \label{du_dT} 
+\end{align}
+
+Equations \ref{du_du}, \ref{du_dp}, and \ref{du_dT} above can then be implement in LMNS.C to create the following terms:\\
+$Kuu, Kuv, Kuw, Kvu, Kvv, Kvw, Kwu, Kwv, Kww, KuT, KvT, KwT, KuP, KvP, KwP$
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Energy Equation}
+The T residual is given as follows:
+\begin{equation}
+    F_T = -\rho c_p (u_a T_{a,b})\psi - k T_{a,b} \psi_{a,b}
+\end{equation}
+
+Again, note that $\rho = \rho(T)$, $c_p = c_p(T)$, and $k = k(T)$
+
+\begin{align}
+    F_T = -\rho c_p u_i \phi_i^a T_j \psi_j^{a,b} \psi_k - k T_i \psi_i^{a,b} \psi_j^{a,b}
+\end{align}
+
+Noting $F_T$ is a function of velocity and temperature.
+
+\begin{align}
+    \frac{\partial F_T}{\partial u_m} = &-\rho c_p \phi_m^a T_j \psi_j^{a,b} \psi_k - 0 \nonumber \\
+    \frac{\partial F_T}{\partial u_m} = &-\rho c_p \phi_m^a T_{a,b} \psi_k \label{dT_du} \\
+    \nonumber \\
+    \frac{\partial F_T}{\partial T_m} = &-u_i \phi_i^a \psi_k \left [ \rho [ c_p \psi_m^{a,b} + T_j \psi_j^{a,b} \frac{d c_p}{dT} \psi_m ] + [ c_p T_j \psi_j^{a,b} ] \frac{d \rho}{dT} \psi_m  \right ] \nonumber \\
+                                      &- k \psi_m^{a,b} \psi_j^{a,b} - T_i \psi_i^{a,b} \psi_j^{a,b} \frac{dk}{dT} \psi_m \\
+    \frac{\partial F_T}{\partial T_m} = &-u_a \psi_k \left [ \rho [ c_p \psi_m^{a,b} + T_{a,b} \frac{d c_p}{dT} \psi_m ] + [ c_p T_{a,b} ] \frac{d \rho}{dT} \psi_m  \right ] \nonumber \\
+                                      &- k \psi_m^{a,b} \psi_j^{a,b} - T_{a,b} \psi_j^{a,b} \frac{dk}{dT} \psi_m \label{dT_dT}
+\end{align}
+
+Equations \ref{dT_du} and \ref{dT_dT} above will result in the following terms for LMNS.C:\\
+$KTu, KTv, KTw, KTT$
+
+\end{document}
