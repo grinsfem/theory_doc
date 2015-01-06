@@ -1,21 +1,3 @@
-\documentclass[10pt]{article}
- 
-\title{Derivation of Low Mach Navier-Stokes Jacobians}
-\date{}
-
-\usepackage{helvet}
-\renewcommand*\familydefault{\sfdefault}
-\usepackage[left=1in,right=1in,top=1.0in,bottom=1in]{geometry}
-\usepackage[small,compact]{titlesec}
-\usepackage{amsmath}
-\usepackage{graphicx}
-
-\begin{document}
-
-\begin{center}
-\textbf{Derivation of Low Mach Navier-Stokes Jacobians}
-\end{center}
-
 \section{Background Information}
 The derivation detailed herein is for computing analytical Jacobians for the Low Mach Navier-Stokes equations. The final results are then implemented in GRINS src/physics/src/low\_mach\_navier\_stokes.C, with the goal being that there
 will be a significant speedup in computation over using the standard finite difference approximation for computing the Jaconians. The derivation is broken up into 3 sections: mass (P residual), momentum (U residual), and energy (T residual).
@@ -28,9 +10,9 @@ Also note that, in this case, the following parameters are considered functions 
     \item viscosity, $\mu$
     \item thermal conductivity, $k$
 \end{itemize}
-For the test functions, \textbf{u}=\{$P,U,T$\} and \textbf{$\Phi$}=\{$\xi,\phi,\psi$\}.\\
+For the formulations, \textbf{u}=\{$P,U,T$\} and the test functions \textbf{$\Phi$}=\{$\xi,\phi,\psi$\}.\\
 Lastly, the variable names used in the code follow this template: $Kxy$, where $x$ is the residual and $y$ is the derivation variable.  For example, $KPT$ is the derivative of the P residual with respect to temperature,
-while $KuP$ is the derivative of the $u$-velocity component of the U residual with respect to pressue. 
+while $KuP$ is the derivative of the $u$-velocity component of the U residual with respect to pressure. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -56,7 +38,7 @@ Galerkin approximation:
     F_p = -u_i \phi_i^a T_j \psi_j^{a,b} (T_k \psi_k)^{-1} \xi + u_i \phi_i^{a,b} \xi
 \end{equation}
 
-The P residual is a function of velocity, $U$, and Temperature, $T$, so we must take derivative with respect to both of them using the following form
+The P residual is a function of velocity, $U$, and temperature, $T$, so we must take derivatives with respect to both of them using the following form:
 
 \begin{align*}
     \frac{\partial}{\partial u_m} (u_i \phi_i^a) &= \phi_m^a \\
@@ -77,7 +59,7 @@ $KPu, KPv, KPw, KPT$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Momentum Equation}
-The U residual is given as follows:
+The U residual is given in tensor notation as follows:
 \begin{equation}
     F_U = -\rho u_a u_{a,b} \phi^b + P \phi^{a,a} - \mu \left [u_{a,b} \phi_{a,b} + u_{b,a} \phi_{a,b} - \frac{2}{3} u_{a,a} \phi_{b,b} \right ] + \rho g_a \phi_a
 \end{equation}
@@ -135,7 +117,7 @@ Noting $F_T$ is a function of velocity and temperature.
     \frac{\partial F_T}{\partial u_m} = &-\rho c_p \phi_m^a T_{a,b} \psi_k \label{dT_du} \\
     \nonumber \\
     \frac{\partial F_T}{\partial T_m} = &-u_i \phi_i^a \psi_k \left [ \rho [ c_p \psi_m^{a,b} + T_j \psi_j^{a,b} \frac{d c_p}{dT} \psi_m ] + [ c_p T_j \psi_j^{a,b} ] \frac{d \rho}{dT} \psi_m  \right ] \nonumber \\
-                                      &- k \psi_m^{a,b} \psi_j^{a,b} - T_i \psi_i^{a,b} \psi_j^{a,b} \frac{dk}{dT} \psi_m \\
+                                      &- k \psi_m^{a,b} \psi_j^{a,b} - T_i \psi_i^{a,b} \psi_j^{a,b} \frac{dk}{dT} \psi_m \nonumber \\
     \frac{\partial F_T}{\partial T_m} = &-u_a \psi_k \left [ \rho [ c_p \psi_m^{a,b} + T_{a,b} \frac{d c_p}{dT} \psi_m ] + [ c_p T_{a,b} ] \frac{d \rho}{dT} \psi_m  \right ] \nonumber \\
                                       &- k \psi_m^{a,b} \psi_j^{a,b} - T_{a,b} \psi_j^{a,b} \frac{dk}{dT} \psi_m \label{dT_dT}
 \end{align}
