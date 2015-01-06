@@ -1,6 +1,6 @@
-\section{Background Information}
+\subsection{Background Information}
 The derivation detailed herein is for computing analytical Jacobians for the Low Mach Navier-Stokes equations. The final results are then implemented in GRINS src/physics/src/low\_mach\_navier\_stokes.C, with the goal being that there
-will be a significant speedup in computation over using the standard finite difference approximation for computing the Jaconians. The derivation is broken up into 3 sections: mass (P residual), momentum (U residual), and energy (T residual).
+will be a significant speedup in computation over using the standard finite difference approximation for computing the Jaconians. The derivation is broken up into 3 subsections: mass (P residual), momentum (U residual), and energy (T residual).
 Each of these is computed in a separate function wihtin the LMNS.C file.  The 3 residuals were already implemented, so they will be the starting point for this derivation. Note that a sign convention has been specified for 
 purposes of optimization.\\
 Also note that, in this case, the following parameters are considered functions of temperature, T:
@@ -14,9 +14,9 @@ For the formulations, \textbf{u}=\{$P,U,T$\} and the test functions \textbf{$\Ph
 Lastly, the variable names used in the code follow this template: $Kxy$, where $x$ is the residual and $y$ is the derivation variable.  For example, $KPT$ is the derivative of the P residual with respect to temperature,
 while $KuP$ is the derivative of the $u$-velocity component of the U residual with respect to pressure. 
 
-
+\newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Mass Equation}
+\subsection{Mass Equation}
 The given P residual:
 \begin{equation}
     F_p = (-(U \cdot \nabla T) T^{-1} + \nabla \cdot U)\xi
@@ -56,9 +56,9 @@ The P residual is a function of velocity, $U$, and temperature, $T$, so we must 
 Equations \ref{fp_du} and \ref{fp_dT} above are the generalized Jacobian terms for the P residual. When implemented in LMNS.C, the following terms will result:\\
 $KPu, KPv, KPw, KPT$
 
-
+\newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Momentum Equation}
+\subsection{Momentum Equation}
 The U residual is given in tensor notation as follows:
 \begin{equation}
     F_U = -\rho u_a u_{a,b} \phi^b + P \phi^{a,a} - \mu \left [u_{a,b} \phi_{a,b} + u_{b,a} \phi_{a,b} - \frac{2}{3} u_{a,a} \phi_{b,b} \right ] + \rho g_a \phi_a
@@ -96,9 +96,9 @@ Equation \ref{u_resid} above is a function of velocity, pressure, and temperatur
 Equations \ref{du_du}, \ref{du_dp}, and \ref{du_dT} above can then be implement in LMNS.C to create the following terms:\\
 $Kuu, Kuv, Kuw, Kvu, Kvv, Kvw, Kwu, Kwv, Kww, KuT, KvT, KwT, KuP, KvP, KwP$
 
-
+\newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Energy Equation}
+\subsection{Energy Equation}
 The T residual is given as follows:
 \begin{equation}
     F_T = -\rho c_p (u_a T_{a,b})\psi - k T_{a,b} \psi_{a,b}
