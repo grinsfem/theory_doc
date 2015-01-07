@@ -10,8 +10,9 @@ Also note that, in this case, the following parameters are considered functions 
     \item thermal conductivity, $k$
 \end{itemize}
 For the formulations, \textbf{u}=\{$P,U,T$\} and the test functions \textbf{$\Phi$}=\{$\xi,\phi,\psi$\}.\\
-Lastly, the variable names used in the code follow this template: $Kxy$, where $x$ is the residual and $y$ is the derivation variable.  For example, $KPT$ is the derivative of the P residual with respect to temperature,
-while $KuP$ is the derivative of the $u$-velocity component of the U residual with respect to pressure. 
+The variable names used in the code follow this template: $Kxy$, where $x$ is the residual and $y$ is the derivation variable.  For example, $KPT$ is the derivative of the P residual with respect to temperature,
+while $KuP$ is the derivative of the $u$-velocity component of the U residual with respect to pressure. \newline
+Lastly, a note on notation. Index notation is used throughout this section in order to make the derivations clearer. Indices $a-h$ and $r-z$ are used for vector components, while $i-q$ are used for degrees of freedom.
 
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -24,7 +25,7 @@ The given P residual:
 Now converting to tensor notation
 
 \begin{equation}
-    F_{p,i} = -u_a T_{a,b} T^{-1} \xi_i + u_{a,b}\xi_i
+    F_{p,i} = -u_a T_{,a} T^{-1} \xi_i + u_{b,b}\xi_i
 \end{equation}
 
 Galerkin approximation:
@@ -34,7 +35,7 @@ Galerkin approximation:
 \end{align*}
 
 \begin{equation}
-    F_{p,i} = -u_k \phi_k^a T_l \psi_l^{a,b} (T_m \psi_m)^{-1} \xi_i + u_n \phi_n^{a,b} \xi_i
+    F_{p,i} = -u_k \phi_k^a T_l \psi_l^{,a} (T_m \psi_m)^{-1} \xi_i + u_n \phi_n^{b,b} \xi_i
 \end{equation}
 
 The P residual is a function of velocity, $U$, and temperature, $T$, so derivatives must be taken with respect to both of them using the following form:
@@ -45,11 +46,11 @@ The P residual is a function of velocity, $U$, and temperature, $T$, so derivati
 \end{align*}
 
 \begin{align}
-    \frac{\partial F_{p,i}}{\partial u_j} = &-\phi_j^{a} T_l \psi_l^{a,b} (T_m \psi_m)^{-1} \xi_i + \phi_j^{a,b} \xi_i \nonumber \\
-    \frac{\partial F_{p,i}}{\partial u_j} = &-\phi_j^{a} T_{a,b} T^{-1} \xi_i + \phi_j^{a,b} \xi_i \label {fp_du}\\ 
+    \frac{\partial F_{p,i}}{\partial u_j} = &-\phi_j^{a} T_l \psi_l^{,a} (T_m \psi_m)^{-1} \xi_i + \phi_j^{b,b} \xi_i \nonumber \\
+    \frac{\partial F_{p,i}}{\partial u_j} = &-\phi_j^{a} T_{,a} T^{-1} \xi_i + \phi_j^{b,b} \xi_i \label {fp_du}\\ 
     \nonumber \\
-    \frac{\partial F_{p,i}}{\partial T_j} = &-u_k \phi_k^a \xi_i \left [ T_l \psi_l^{a,b} (-1) (T_m \psi_m)^{-2} (\psi_j) + (T_m \psi_m)^{-1} \psi_j^{a,b} \right ] \nonumber \\
-    \frac{\partial F_{p,i}}{\partial T_j} = &-u_a \xi_i \left [ -T_{a,b} T^{-2} \psi_j + T^{-1} \psi_j^{a,b} \right ] \label{fp_dT}
+    \frac{\partial F_{p,i}}{\partial T_j} = &-u_k \phi_k^a \xi_i \left [ T_l \psi_l^{,a} (-1) (T_m \psi_m)^{-2} (\psi_j) + (T_n \psi_n)^{-1} \psi_j^{b,b} \right ] \nonumber \\
+    \frac{\partial F_{p,i}}{\partial T_j} = &-u_a \xi_i \left [ -T_{,a} T^{-2} \psi_j + T^{-1} \psi_j^{b,b} \right ] \label{fp_dT}
 \end{align}
 
 Equations \ref{fp_du} and \ref{fp_dT} above are the generalized Jacobian terms for the P residual. When implemented in LMNS.C, the following terms will result:\\
@@ -58,12 +59,15 @@ $KPu, KPv, KPw, KPT$
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Momentum Equation}
-The U residual is given in tensor notation as follows:
-\begin{equation}
-    F_U = -\rho u_a u_{a,b} \phi^b + P \phi^{a,a} - \mu \left [u_{a,b} \phi_{a,b} + u_{b,a} \phi_{a,b} - \frac{2}{3} u_{a,a} \phi_{b,b} \right ] + \rho g_a \phi_a
-\end{equation}
+The U residual is given in vector and tensor notation as follows:
+\begin{align}
+    F_{U,i} &= -\rho u \cdot \nabla u \cdot \phi_i + P(\nabla \cdot \phi_i) - \mu \left [\nabla u : \nabla \phi_i + (\nabla u)^T : \nabla \phi_i - \frac{2}{3} (\nabla \cdot u) I : \nabla \phi_i \right ] + \rho \mathbf{g} \cdot \phi_i \\
+    F_{U,i}^a &= -\rho u_b u_{a,b} \phi_i^a + P\phi_i^{a,a} - \mu \left [u_{a,c} \phi_i^{a,c} + u_{d,a} \phi_i^{a,d} - \frac{2}{3} u_{e,e} \delta_{a,f} \phi_i^{a,f} \right ] + \rho g_a \phi_i^a \ (no \ sum \ on \ a) \label{Fui_tensor}
+\end{align}
 
-Galerkin approximation
+Note that in \ref{Fui_tensor}, $\delta_{a,f}$ is the Dirac delta function. \\
+
+Now, the Galerkin approximation
 
 \begin{align*}
     u_a &= \sum_i u_i \phi_i^a\\
@@ -72,24 +76,25 @@ Galerkin approximation
 \end{align*}
 
 \begin{align}
-    F_U =  -\rho u_i \phi_i^a u_j \phi_j^{a,b} \phi^b + P_i \xi_i \phi^{a,a} - \mu \left [u_i \phi_i^{a,b} \phi_{a,b} + u_i \phi_i^{b,a} \phi_{a,b} - \frac{2}{3} u_i \phi_i^{a,a} \phi_{b,b} \right ] + \rho g_a \phi_a \label{u_resid}
+    F_{U,i}^a =  -\rho u_k \phi_k^b u_l \phi_l^{a,b} \phi_i^a + P_m \xi_m \phi_i^{a,a} - \mu \left [u_n \phi_n^{a,c} \phi_i^{a,c} + u_o \phi_o^{d,a} \phi_i^{a,d} - \frac{2}{3} u_p \phi_p^{e,e} \delta_{a,f} \phi_i^{a,f} \right ] + \rho g_a \phi_i^a \label{u_resid}
 \end{align}
 
-Equation \ref{u_resid} above is a function of velocity, pressure, and temperature (due to $\rho = \rho(T)$ \\and $\mu = \mu(T)$ \ ), so derivatives must be taken with respect to all of them.
+Equation \ref{u_resid} above is a function of velocity, pressure, and temperature (due to $\rho = \rho(T)$ and $\mu = \mu(T)$ \ ), so derivatives must be taken with respect to all of them.
 
 \begin{align}
-   \frac{\partial F_U}{\partial u_m} = &-\rho \left [ u_i \phi_i^a \phi_m^{a,b} + u_j \phi_j^{a,b} \phi_m^a \right ] \phi^b 
-        - \mu \left [\phi_m^{a,b} \phi^{a,b} + \phi_m^{b,a} \phi^{a,b} - \frac{2}{3} \phi_m^{a,a} \phi^{b,b} \right ] \nonumber \\     
-   \frac{\partial F_U}{\partial u_m} = &-\rho \left [ u_a \phi_m^{a,b} + u_{a,b} \phi_m^a \right ] \phi^b - \mu \left [\phi_m^{a,b} \phi^{a,b} + \phi_m^{b,a} \phi^{a,b} - \frac{2}{3} \phi_m^{a,a} \phi^{b,b} \right ] \label{du_du}\\
+   \frac{\partial F_{U,i}^a}{\partial u_j} = &-\rho \left [ u_k \phi_k^b \phi_j^{a,b} + u_l \phi_l^{a,g} \phi_j^g \right ] \phi_i^a 
+        + 0 - \mu \left [\phi_j^{a,c} \phi_i^{a,c} + \phi_j^{d,a} \phi_i^{a,d} - \frac{2}{3} \phi_j^{e,e} \delta_{a,f} \phi_i^{a,f} \right ] \nonumber \\     
+   \frac{\partial F_{U,i}^a}{\partial u_j} = &-\rho \left [ u_b \phi_j^{a,b} + u_{a,g} \phi_j^g \right ] \phi_i^a 
+        - \mu \left [\phi_j^{a,c} \phi_i^{a,c} + \phi_j^{d,a} \phi_i^{a,d} - \frac{2}{3} \phi_j^{e,e} \delta_{a,f} \phi_i^{a,f} \right ] \label{du_du} \\
    \nonumber \\ 
-   \frac{\partial F_U}{\partial P_m} = &\xi_m \phi^{a,a} \label{du_dp} \\
+   \frac{\partial F_{U,i}^a}{\partial P_j} = &\xi_j \phi^{a,a} \label{du_dp} \\
    \nonumber \\
-   \frac{\partial F_U}{\partial T_m} = &-\frac{d\rho}{dT} \frac{d}{dT_m}(T_i \psi_i) u_i \phi_i^a u_j \phi_j^{a,b} \phi^b
-        - \left[ 0 + \frac{d\mu}{dT} \frac{d}{dT_m}(T_i \psi_i) [u_i \phi_i^{a,b} \phi_{a,b} + u_i \phi_i^{b,a} \phi_{a,b} - \frac{2}{3} u_i \phi_i^{a,a} \phi_{b,b} ] \right ] \nonumber
-        \\ &+ \frac{d\rho}{dT} \frac{d}{dT_m}(T_i \psi_i) g_a \phi_a \nonumber \\       
-   \frac{\partial F_U}{\partial T_m} = &-\frac{d\rho}{dT} \psi_m u_a u_{a,b} \phi^b
-        - \frac{d\mu}{dT} \psi_m \left [u_{a,b} \phi_{a,b} + u_{b,a} \phi_{a,b} - \frac{2}{3} u_{a,a} \phi_{b,b} \right ]
-        + \frac{d\rho}{dT} \psi_m g_a \phi_a \label{du_dT} 
+   \frac{\partial F_{U,i}^a}{\partial T_j} = &-\frac{d\rho}{dT} \frac{d}{dT_j}(T_k \psi_k) u_l \phi_l^b u_m \phi_m^{a,b} \phi_i^a
+        + 0 \nonumber \\ &- \left[ 0 + \frac{d\mu}{dT} \frac{d}{dT_j}(T_n \psi_n) [u_o \phi_o^{a,c} \phi_i^{a,c} + u_p \phi_p^{d,a} \phi_i^{a,d} - \frac{2}{3} u_q \phi_q^{e,e} \delta_{a,f} \phi_i^{a,f} ] \right ] \nonumber
+        \\ &+ \frac{d\rho}{dT} \frac{d}{dT_m}(T_r \psi_r) g_a \phi_a \nonumber \\       
+   \frac{\partial F_{U,i}^a}{\partial T_j} = &-\frac{d\rho}{dT} \psi_j u_b u_{a,b} \phi_i^a
+        - \frac{d\mu}{dT} \psi_j \left [u_{a,c} \phi_i^{a,c} + u_{d,a} \phi_i^{a,d} - \frac{2}{3} u_{e,e} \delta_{a,f} \phi_i^{a,f} \right ]
+        + \frac{d\rho}{dT} \psi_j g_a \phi_i^a \label{du_dT} 
 \end{align}
 
 Equations \ref{du_du}, \ref{du_dp}, and \ref{du_dT} above can then be implement in LMNS.C to create the following terms:\\
@@ -99,26 +104,29 @@ $Kuu, Kuv, Kuw, Kvu, Kvv, Kvw, Kwu, Kwv, Kww, KuT, KvT, KwT, KuP, KvP, KwP$
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Energy Equation}
 The T residual is given as follows:
-\begin{equation}
-    F_T = -\rho c_p (u_a T_{a,b})\psi - k T_{a,b} \psi_{a,b}
-\end{equation}
+\begin{align}
+    F_{T,i} &= -\rho c_p (u \cdot \nabla T) \psi_i - k ( \nabla T \cdot \nabla \psi_i) \\
+    F_{T,i} &= -\rho c_p (u_a T_{,a})\psi_i - k T_{,b} \psi_i^{,b}
+\end{align}
 
 Again, note that $\rho = \rho(T)$, $c_p = c_p(T)$, and $k = k(T)$
 
 \begin{align}
-    F_T = -\rho c_p u_i \phi_i^a T_j \psi_j^{a,b} \psi_k - k T_i \psi_i^{a,b} \psi_j^{a,b}
+    F_{T,i} = -\rho c_p u_k \phi_k^a T_l \psi_l^{,a} \psi_i - k T_m \psi_m^{,b} \psi_i^{,b}
 \end{align}
 
-Noting $F_T$ is a function of velocity and temperature.
+Noting $F_{T,i}$ is a function of velocity and temperature.
 
 \begin{align}
-    \frac{\partial F_T}{\partial u_m} = &-\rho c_p \phi_m^a T_j \psi_j^{a,b} \psi_k - 0 \nonumber \\
-    \frac{\partial F_T}{\partial u_m} = &-\rho c_p \phi_m^a T_{a,b} \psi_k \label{dT_du} \\
+    \frac{\partial F_{T,i}}{\partial u_j} = &-\rho c_p \phi_j^a T_l \psi_l^{,a} \psi_i - 0 \nonumber \\
+    \frac{\partial F_{T,i}}{\partial u_j} = &-\rho c_p \phi_j^a T_{,a} \psi_i \label{dT_du} \\
     \nonumber \\
-    \frac{\partial F_T}{\partial T_m} = &-u_i \phi_i^a \psi_k \left [ \rho [ c_p \psi_m^{a,b} + T_j \psi_j^{a,b} \frac{d c_p}{dT} \psi_m ] + [ c_p T_j \psi_j^{a,b} ] \frac{d \rho}{dT} \psi_m  \right ] \nonumber \\
-                                      &- k \psi_m^{a,b} \psi_j^{a,b} - T_i \psi_i^{a,b} \psi_j^{a,b} \frac{dk}{dT} \psi_m \nonumber \\
-    \frac{\partial F_T}{\partial T_m} = &-u_a \psi_k \left [ \rho [ c_p \psi_m^{a,b} + T_{a,b} \frac{d c_p}{dT} \psi_m ] + [ c_p T_{a,b} ] \frac{d \rho}{dT} \psi_m  \right ] \nonumber \\
-                                      &- k \psi_m^{a,b} \psi_j^{a,b} - T_{a,b} \psi_j^{a,b} \frac{dk}{dT} \psi_m \label{dT_dT}
+    \frac{\partial F_{T,i}}{\partial T_j} = &-\psi_i \left [ \rho [ c_p u_k \phi_k^a \psi_j^{,a} + u_l \phi_l^b T_m \psi_m^{,b} \frac{d c_p}{dT} \psi_j ] + 
+    [ c_p u_n \phi_n^{c} T_o \psi_o^{,c} ] \frac{d \rho}{dT} \psi_j  \right ] \nonumber \\
+                                      &- k \psi_j^{,d} \psi_i^{,d} - T_p \psi_p^{,e} \psi_i^{,e} \frac{dk}{dT} \psi_j \nonumber \\
+    \frac{\partial F_{T,i}}{\partial T_j} = &-\psi_i \left [ \rho [ c_p u_a \psi_j^{,a} + u_b T_{,b} \frac{d c_p}{dT} \psi_j ] + 
+    [ c_p u_c T_{,c} ] \frac{d \rho}{dT} \psi_j  \right ] \nonumber \\
+                                      &- k \psi_j^{,d} \psi_i^{,d} - T_{,e} \psi_i^{,e} \frac{dk}{dT} \psi_j \label{dT_dT}
 \end{align}
 
 Equations \ref{dT_du} and \ref{dT_dT} above will result in the following terms for LMNS.C:\\
