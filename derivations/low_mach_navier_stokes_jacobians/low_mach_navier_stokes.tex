@@ -12,7 +12,10 @@ Also note that, in this case, the following parameters are considered functions 
 For the formulations, \textbf{u}=\{$P,U,T$\} and the test functions \textbf{$\Phi$}=\{$\xi,\phi,\psi$\}.\\
 The variable names used in the code follow this template: $Kxy$, where $x$ is the residual and $y$ is the derivation variable.  For example, $KPT$ is the derivative of the P residual with respect to temperature,
 while $KuP$ is the derivative of the $u$-velocity component of the U residual with respect to pressure. \newline
-Lastly, a note on notation. Index notation is used throughout this section in order to make the derivations clearer. Indices $a-h$ and $r-z$ are used for vector components, while $i-q$ are used for degrees of freedom.
+Lastly, a note on notation. Index notation is used throughout this section in order to make the derivations clearer. Indices $a-h$ are used for vector components, while $i-r$ are used for degrees of freedom.
+Also note that Cartesian coordiantes are assumed for these derivations. As such, in the momentum equation in particular, terms of the following form may appear: $\phi_i^{a,b}$. In the index notation used herein for the case
+where bot sub- and superscripts appear on a single variable, 
+subscripts refer exclusively to degrees of freedom, while superscripts are used exclusively for vector operations (i.e. divergence or gradient).
 
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,7 +82,8 @@ Now, the Galerkin approximation
     F_{U,i}^a =  -\rho u_k \phi_k^b u_l \phi_l^{a,b} \phi_i^a + P_m \xi_m \phi_i^{a,a} - \mu \left [u_n \phi_n^{a,c} \phi_i^{a,c} + u_o \phi_o^{d,a} \phi_i^{a,d} - \frac{2}{3} u_p \phi_p^{e,e} \delta_{a,f} \phi_i^{a,f} \right ] + \rho g_a \phi_i^a \label{u_resid}
 \end{align}
 
-Equation \ref{u_resid} above is a function of velocity, pressure, and temperature (due to $\rho = \rho(T)$ and $\mu = \mu(T)$ \ ), so derivatives must be taken with respect to all of them.
+Equation \ref{u_resid} above is a function of velocity, pressure, and temperature (due to $\rho = \rho(T)$ and $\mu = \mu(T)$ \ ), so derivatives must be taken with respect to all of them.\\
+\textbf{Also note that, as stated in \ref{Fui_tensor}, there is no sum over index $a$}.
 
 \begin{align}
    \frac{\partial F_{U,i}^a}{\partial u_j} = &-\rho \left [ u_k \phi_k^b \phi_j^{a,b} + u_l \phi_l^{a,g} \phi_j^g \right ] \phi_i^a 
