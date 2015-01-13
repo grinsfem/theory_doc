@@ -14,7 +14,7 @@ The variable names used in the code follow this template: $Kxy$, where $x$ is th
 while $KuP$ is the derivative of the $u$-velocity component of the U residual with respect to pressure. \newline
 Lastly, a note on notation. Index notation is used throughout this section in order to make the derivations clearer. Indices $a-h$ are used for vector components, while $i-r$ are used for degrees of freedom.
 Also note that Cartesian coordiantes are assumed for these derivations. As such, in the momentum equation in particular, terms of the following form may appear: $\phi_i^{a,b}$. In the index notation used herein for the case
-where bot sub- and superscripts appear on a single variable, 
+where both sub- and superscripts appear on a single variable, 
 subscripts refer exclusively to degrees of freedom, while superscripts are used exclusively for vector operations (i.e. divergence or gradient).
 
 \newpage
@@ -52,8 +52,9 @@ The P residual is a function of velocity, $U$, and temperature, $T$, so derivati
     \frac{\partial F_{p,i}}{\partial u_j} = &-\phi_j^{a} T_l \psi_l^{,a} (T_m \psi_m)^{-1} \xi_i + \phi_j^{b,b} \xi_i \nonumber \\
     \frac{\partial F_{p,i}}{\partial u_j} = &-\phi_j^{a} T_{,a} T^{-1} \xi_i + \phi_j^{b,b} \xi_i \label {fp_du}\\ 
     \nonumber \\
-    \frac{\partial F_{p,i}}{\partial T_j} = &-u_k \phi_k^a \xi_i \left [ T_l \psi_l^{,a} (-1) (T_m \psi_m)^{-2} (\psi_j) + (T_n \psi_n)^{-1} \psi_j^{b,b} \right ] \nonumber \\
-    \frac{\partial F_{p,i}}{\partial T_j} = &-u_a \xi_i \left [ -T_{,a} T^{-2} \psi_j + T^{-1} \psi_j^{b,b} \right ] \label{fp_dT}
+    \frac{\partial F_{p,i}}{\partial T_j} = &-u_k \phi_k^a \xi_i \left [ T_l
+\psi_l^{,c} (-1) (T_m \psi_m)^{-2} (\psi_j) + (T_n \psi_n)^{-1} \psi_j^{,d} \right ] + 0 \nonumber \\
+    \frac{\partial F_{p,i}}{\partial T_j} = &u_c T_{,c} T^{-2} \psi_j \xi_i - u_d T^{-1} \psi_j^{,d} \xi_i \label{fp_dT}
 \end{align}
 
 Equations \ref{fp_du} and \ref{fp_dT} above are the generalized Jacobian terms for the P residual. When implemented in LMNS.C, the following terms will result:\\
@@ -68,7 +69,7 @@ The U residual is given in vector and tensor notation as follows:
     F_{U,i}^a &= -\rho u_b u_{a,b} \phi_i^a + P\phi_i^{a,a} - \mu \left [u_{a,c} \phi_i^{a,c} + u_{d,a} \phi_i^{a,d} - \frac{2}{3} u_{e,e} \delta_{a,f} \phi_i^{a,f} \right ] + \rho g_a \phi_i^a \ (no \ sum \ on \ a) \label{Fui_tensor}
 \end{align}
 
-Note that in \ref{Fui_tensor}, $\delta_{a,f}$ is the Dirac delta function. \\
+Note that in \ref{Fui_tensor}, $\delta_{a,f}$ is the Kronecker delta function. \\
 
 Now, the Galerkin approximation
 
