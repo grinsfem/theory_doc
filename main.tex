@@ -1,7 +1,35 @@
 \documentclass[twoside]{report}
 
-\usepackage{amsmath}
+\usepackage{color}
+\usepackage{amsmath,amsfonts}
 \usepackage{graphicx}
+
+\usepackage[pdftex,hypertexnames=false,
+            colorlinks=true,
+            pdfstartview=FitV,
+            linkcolor=black,
+            citecolor=black,
+            urlcolor=black,
+            pdfpagelabels,
+            naturalnames=true]{hyperref}
+
+\newcommand\myurl[2]{\url{#1}} % Strip periods after URLs
+
+\newcommand{\red}[1]{{\color{red} #1}}
+\newcommand{\todo}[1]{\textbf{TODO: #1}}
+
+\newcommand{\software}[1]{\texttt{#1}}
+\newcommand{\libMesh}{\software{libMesh}}
+\newcommand{\GRINS}{\software{GRINS}}
+\newcommand{\FEMSystem}{\software{FEMSystem}}
+
+\newcommand{\bx}{\boldsymbol{x}}
+\newcommand{\bu}{\boldsymbol{u}}
+\newcommand{\bv}{\boldsymbol{v}}
+\newcommand{\bn}{\boldsymbol{n}}
+\newcommand{\bg}{\boldsymbol{g}}
+\newcommand{\bI}{\boldsymbol{I}}
+
 
 \begin{document}
 
