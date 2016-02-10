@@ -1,0 +1,84 @@
+\section{Strong Form}
+
+\cite{CodinaPaper,CavityBenchmark}
+
+Unknowns:
+\begin{itemize}
+\item $\bu$ - velocity
+\item $T$ - temperature
+\item $p$ - hydrostatic pressure
+\end{itemize}
+
+Other quantities:
+\begin{itemize}
+\item $p^0$ - thermodynamic pressure
+\item $t$ - time
+\item $\tau$ - viscous stress tensor
+\item $\rho$ - density
+\item $\bg$ - gravitational acceleration
+\item $c_p$ - specific heat
+\item $k$ - thermal conductivity
+\item $R$ - mixture gas constant (not universal gas constant)
+\item $\mu$ - viscosity
+\end{itemize}
+
+If the Neumann boundary for the velocity variables is not empty, i.e.
+$\Gamma_{N,\bu} \ne \empty{}$then, the thermodynamic pressure, $p_0$
+is constant and the following system of equations holds:
+%
+\begin{align}
+\nabla \cdot \bu &= \frac{1}{T}\frac{DT}{Dt}  \\
+\rho \frac{D\bu}{Dt} &= -\nabla p + \nabla \cdot \mathbf{\tau} + \rho \bg \\
+\rho c_p \frac{DT}{Dt} &= \nabla \cdot \left(k \nabla T \right) \\
+p_0 &= \rho R T
+\end{align}
+%
+with
+%
+\begin{align}
+  &\frac{D(\cdot)}{Dt} = \frac{\partial (\cdot)}{\partial t} + \bu
+  \cdot \nabla (\cdot) \\
+  &\tau = \mu \left( \nabla \bu + \left(\nabla \bu\right)^T -
+  \frac{2}{3}\left( \nabla \cdot \bu \right)\bI \right)
+\end{align}
+
+Rewriting:
+%
+\begin{align}
+\frac{1}{T} \frac{\partial T}{\partial t} &= \nabla
+\cdot \bu -  \frac{1}{T} \left( \bu \cdot \nabla T  \right)  \\
+\rho \frac{\partial \bu}{\partial t} &= -\rho \bu \cdot \nabla \bu - \nabla
+p + \nabla \cdot \tau + \rho \bg \\
+\rho c_p \frac{\partial T}{\partial t} &= -\rho c_p \bu \cdot \nabla T + \nabla \cdot \left(k \nabla T \right) \\
+p_0 &= \rho R T
+\end{align}
+
+\section{Weak Form}
+
+Steady State:
+
+Take $\mathbf{u} = (p, \bu, T) \in U$ and $\mathbf{v} = (q, \bv, w)
+\in V$. We wish to solve the problem:
+%
+\begin{equation}
+  \begin{split}
+  \text{Find } &\mathbf{u} \in U: \\
+  &B(\mathbf{u}, \mathbf{v}) = F(\mathbf{v}) \quad \forall \mathbf{v} \in V
+  \end{split}
+\end{equation}
+%
+
+\begin{equation}
+  \begin{split}
+  B(\mathbf{u}, \mathbf{v}) = &
+  ( \nabla \cdot \bu - \frac{1}{T} \left( \bu \cdot \nabla T  \right),
+  q )\\
+  &+ ( \rho \bu \cdot \nabla \bu, \bv) - (\tau, \nabla \bv) - (p,\nabla
+  \cdot \bv ) - (\rho \bg, \bv) \\
+  &+ (\rho \bu \cdot \nabla T, w) + (k\nabla T, \nabla w)
+  \end{split}
+\end{equation}
+
+$F(\mathbf{v})$ contains any applicable nonhomogeneous linear neumann
+boundary conditions. Nonlinear Neumann boundary conditions will be
+absorbed into $B(\mathbf{u}, \mathbf{v})$.
