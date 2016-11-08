@@ -14,11 +14,13 @@ bibfiles := $(wildcard *.bib)
 styfiles := $(wildcard $(repo_path)/latex_common/*.sty)
 clsfiles := $(wildcard $(repo_path)/latex_common/*.cls)
 
+texsources := $(shell find -name '*.tex')
+
 all: $(texfinal)
 
 figures: $(figures)
 
-$(texfinal): *.tex $(bibfiles) $(figures) $(clsfiles) $(styfiles)
+$(texfinal): $(texsources) $(bibfiles) $(figures) $(clsfiles) $(styfiles)
 	latexmk -pdf -f $(texroot).tex -jobname=grins
 
 clean: cleanlatex cleanfigs
